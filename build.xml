@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Zonefiles" default="build">
+
+  <target name="build" depends="validatezonefiles, deployns2, restartns2"/>
+
+  <target name="validatezonefiles">
+      <apply executable="/usr/sbin/named-checkzone"  failonerror="true">
+          <arg value="1" />
+          <fileset dir="${basedir}/zonefiles">
+              <include name="**/*.dns" />
+          </fileset>
+      </apply>
+  </target>
+
+  <target name="deployns2" description="deploy usng rsync" >
+    <exec executable="rsync" dir="${basedir}/zonefiles" failonerror="true">
+      <arg value="-a"/>
+      <arg value="-v"/>
+      <arg value="-z"/>
+      <arg value="${basedir}/zonefiles/"/>
+      <arg value="deploymentuser@ns2.b-dns.eu:/home/storage/dns/zonefiles/"/>
+    </exec>
+  </target>
+
+  <target name="restartns2" description="restart remote bind" >
+    <exec executable="ssh" dir="${basedir}/zonefiles" failonerror="true">
+      <arg value="deploymentuser@ns2.b-dns.eu" />
+      <arg value="/usr/local/bin/UpdateBind"/>
+    </exec>
+  </target>
+</project>
